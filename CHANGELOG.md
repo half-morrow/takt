@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - Worktree-isolated clones no longer fail with missing-object errors when branching off a fetched base-branch commit (#791). The isolated clone now fetches the base branch's commits from the main repository before running `git reset --hard`, so the reset target is always present in the clone.
+- OpenCode readonly permission mode now allows read tools (#797). The `readonly` mode denied every tool — including `read`, `glob`, and `grep` — so read-only steps such as reviews could not inspect the codebase at all. Those three read tools are now allowed while edit, bash, and network tools stay denied.
 
 ### Internal
 

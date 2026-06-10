@@ -6,6 +6,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.45.0] - 2026-06-10
+
+### Added
+
+- Phase-level usage events and a usage analysis script (#785). With `observability.enabled: true` and `observability.usage_events_phase: true`, each run writes per-phase token usage events to `.takt/runs/<run>/logs/<session>-usage-events.phase.jsonl`, as a separate stream from the existing `logging.usage_events` output. Events are grouped by workflow phase (`phase1_execute`, `phase2_report`, and the status-judgment variants `phase3_structured` / `phase3_tag` / `phase3_fallback`), and calls whose usage is unavailable are recorded with `usage_missing: true` instead of being counted as zero tokens. A new `npm run analyze:usage` script aggregates one or more event files or run directories into a Markdown or CSV table keyed by step × phase × provider × model, with token totals and per-call statistics. Documented in the new [Observability guide](./docs/observability.md).
+- Clipboard image paste in interactive mode (#791). Pressing Ctrl+V (or running the new `/paste-image` command) during interactive input now attaches an image directly from the OS clipboard; previously paste only worked for terminals that emit inline-image (OSC 1337) escape sequences. Attached images also flow through the provider abstraction now: `claude-sdk` and `codex` receive them as native image input, while the other providers get the attachment file paths referenced in the prompt so the agent can open them with its own tools.
+
+### Changed
+
+- **BREAKING:** Interrupted `running` tasks are no longer auto-requeued (#791). When `takt run` or `takt watch` was interrupted (process crash, kill), tasks left in `running` status used to be recovered to `pending` and re-executed on the next invocation. They are now marked `failed` with an explanatory error instead; requeue them explicitly to run them again.
+
+### Fixed
+
+- Worktree-isolated clones no longer fail with missing-object errors when branching off a fetched base-branch commit (#791). The isolated clone now fetches the base branch's commits from the main repository before running `git reset --hard`, so the reset target is always present in the clone.
+
+### Internal
+
+- Claude Agent SDK and Codex SDK dependency updates (#789, #795).
+- Removed the `takt-quality-check` command gate from the implement-type steps in the repository's own `.takt/config.yaml`.
+
 ## [0.44.0] - 2026-06-03
 
 ### Added

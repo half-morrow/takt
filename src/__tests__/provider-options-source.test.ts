@@ -4,6 +4,7 @@ import {
   resolveProviderOptionSource,
   resolveProviderOptionsSources,
 } from '../infra/config/providerOptions.js';
+import type { StepProviderOptions } from '../core/models/workflow-provider-options.js';
 
 describe('resolveProviderOptionSource', () => {
   it('Given step has value, When resolve, Then source is step', () => {
@@ -138,6 +139,22 @@ describe('resolveProviderOptionSource', () => {
 
     expect(source).toBe('env');
   });
+
+  it('Given opencode allowedTools has env origin, When resolve, Then source is env', () => {
+    const stepOptions: StepProviderOptions = { opencode: { allowedTools: ['read', 'edit'] } };
+    const configOptions: StepProviderOptions = { opencode: { allowedTools: ['read', 'grep'] } };
+
+    const source = resolveProviderOptionSource(
+      'opencode.allowedTools',
+      stepOptions,
+      undefined,
+      configOptions,
+      (path) => (path === 'opencode.allowedTools' ? 'env' : 'local'),
+      'project',
+    );
+
+    expect(source).toBe('env');
+  });
 });
 
 describe('resolveProviderOptionsSources (all paths)', () => {
@@ -160,6 +177,7 @@ describe('resolveProviderOptionsSources (all paths)', () => {
     expect(PROVIDER_OPTION_PATHS).toContain('claude.effort');
     expect(PROVIDER_OPTION_PATHS).toContain('codex.reasoningEffort');
     expect(PROVIDER_OPTION_PATHS).toContain('opencode.variant');
+    expect(PROVIDER_OPTION_PATHS).toContain('opencode.allowedTools');
     expect(PROVIDER_OPTION_PATHS).toContain('copilot.effort');
     expect(PROVIDER_OPTION_PATHS).toContain('kiro.agent');
   });

@@ -198,20 +198,6 @@ export function buildOpenCodePermissionRuleset(
 }
 
 export type OpenCodeAllowedTools = readonly string[];
-export type OpenCodePromptTools = Record<string, boolean>;
-
-export function buildOpenCodePromptTools(
-  mode: PermissionMode | undefined,
-  networkAccess: boolean | undefined,
-  allowedTools: OpenCodeAllowedTools | undefined,
-): OpenCodePromptTools | undefined {
-  if (allowedTools === undefined) {
-    return undefined;
-  }
-
-  const allowedPermissions = resolveOpenCodeAllowedPermissions(mode, networkAccess, allowedTools);
-  return Object.fromEntries(allowedPermissions.map((permission) => [permission, true]));
-}
 
 function buildOpenCodeAllowedToolsRuleset(
   mode: PermissionMode | undefined,
@@ -222,28 +208,20 @@ function buildOpenCodeAllowedToolsRuleset(
     return [{ permission: '*', pattern: '*', action: 'deny' }];
   }
 
-  const uniqueAllowed = resolveOpenCodeAllowedPermissions(mode, networkAccess, allowedTools);
-
-  return [
-    { permission: '*', pattern: '*', action: 'deny' },
-    ...uniqueAllowed.map((permission) => ({ permission, pattern: '*', action: 'allow' as const })),
-  ];
-}
-
-function resolveOpenCodeAllowedPermissions(
-  mode: PermissionMode | undefined,
-  networkAccess: boolean | undefined,
-  allowedTools: OpenCodeAllowedTools,
-): OpenCodePermissionKey[] {
   const allowed = allowedTools
     .map(toOpenCodeAllowedPermission)
-    .filter((permission): permission is OpenCodePermissionKey => (
+    .filter((permission): permission is string => (
       permission !== null
       && isOpenCodePermissionKey(permission)
       && (permission !== 'edit' || isAllowedByPermissionMode(permission, mode))
       && (networkAccess !== false || !isOpenCodeWebPermission(permission))
     ));
-  return Array.from(new Set(allowed));
+  const uniqueAllowed = Array.from(new Set(allowed));
+
+  return [
+    { permission: '*', pattern: '*', action: 'deny' },
+    ...uniqueAllowed.map((permission) => ({ permission, pattern: '*', action: 'allow' as const })),
+  ];
 }
 
 function isOpenCodeWebPermission(permission: string): boolean {
